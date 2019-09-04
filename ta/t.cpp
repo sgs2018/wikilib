@@ -49,7 +49,7 @@ void backtrack(vector<point>& X)
   {
     solved = true;
     for (const auto& c : X)
-      cout << c.x << ' ' << c.y << endl;
+      cout << c.x << "@" << c.y << endl;
   }
   else
     for (int direction = 0; direction < d; ++direction)
