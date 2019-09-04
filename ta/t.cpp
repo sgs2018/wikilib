@@ -1,81 +1,66 @@
 /*
-mydata maze
+
+mydata.clock.vector 1500byte 70loc
 Skip to content
-xiexiexx / Planet
+xiexiexx / BIDS
 Sign up
 Code Issues 0 Pull requests 0 Projects 0 Security Pulse
-Planet/backtrack/maze.cpp
-@xiexiexx xiexiexx Update maze.cpp e528dc4 3 days ago
-67 lines (61 sloc) 1.75 KB
+BIDS/algorithm/common_running_times.cpp
+@xiexiexx xiexiexx 20181111 2027608 on Nov 12, 2018
+executable file 54 lines (44 sloc) 1.31 KB
+
 */
 
-#include <iostream>
-#include <vector>
+#include <iostream>   // 输入输出流.
+#include <ctime>      // 时间.
+#include <algorithm>  // 算法库.
+#include <vector>     // 向量.
 
-using namespace std;
+using namespace std;  // 使用名字空间std.
 
-// 为方便讲解, 我们不定义point的相等(==)和不相等(!=)运算符.
-struct point {
-  int x;
-  int y;
-};
-
-const int m = 5;
-const int n = 7;
-const char unvisited = '0'; // 未访问过的标记.
-const char visited = 'V';   // 访问过的标记.
-// 迷宫字符数组, 周围一圈全是墙(以'*'标记).
-char maze[m][n] = {
-    {'*', '*', '*', '*', '*', '*', '*'},
-    {'*', '0', '0', '0', '*', '0', '*'},
-    {'*', '0', '*', '*', '*', '0', '*'},
-    {'*', '0', '0', '0', '0', '0', '*'},
-    {'*', '*', '*', '*', '*', '*', '*'}
-};
-const int d = 4;      // 可行方向总数.
-// 以下标取值0, 1, 2, 3标记东南西北与当前位置的偏移量.
-const point delta[d] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-// 起点与终点的坐标.
-point source = {1, 1};
-point destination = {3, 5};
-
-// 递归形式求解迷宫, 实际上不用递归更好, 避免了参数传递, 但要保存每个点的direction当前值.
-
-
-bool solved = false;
-void backtrack(vector<point>& X)
+inline double time(clock_t start, clock_t end)
 {
-  if (X.back().x == destination.x && X.back().y == destination.y)
-  {
-    solved = true;
-    for (const auto& c : X)
-      cout << c.x << ' ' << c.y << endl;
-  }
-  else
-    for (int direction = 0; direction < d; ++direction)
-    {
-      point next = {X.back().x + delta[direction].x,
-                    X.back().y + delta[direction].y};
-      if (maze[next.x][next.y] == unvisited)
-      {
-        maze[next.x][next.y] = visited;
-        X.push_back(next);
-        backtrack(X);
-        X.pop_back();
-        if (solved)
-          return;
-      }
-    }
+  return static_cast<double>(end - start) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
 int main()
 {
-  vector<point> P;
-  P.reserve(m * n);
-  P.push_back(source);                     
- // 初始点设为入口点.
-  maze[source.x][source.y] = visited;
-  backtrack(P);
+  // 计时变量.
+  clock_t start, end;
+  const size_t N = 100000000;
+
+  // 占用的存储量很大.
+  vector<size_t> v(N);
+
+  // 线性时间
+  start = clock();
+  for (size_t i = 0; i < v.size(); ++i)
+    v[i] = v.size() - i;
+  end = clock();
+  cout << "运行时间(s): " << time(start, end) << endl;
+
+  // 线对时间
+  start = clock();
+  sort(v.begin(), v.end());
+  end = clock();
+  cout << "运行时间(s): " << time(start, end) << endl;
+
+  // 对数时间
+  start = clock();
+  binary_search(v.begin(), v.end(), 1);
+  end = clock();
+  cout << "运行时间(s): " << time(start, end) << endl;
+
+  // 平方时间, 无法使用N这个规模量.
+  size_t M = 100000;
+  start = clock();
+  for (size_t i = 0; i < M; ++i)
+    for (size_t j = 0; j < M; ++j)
+      v[i] *= j;
+  end = clock();
+  cout << "运行时间(s): " << time(start, end) << endl;
+  // 如果是N这个规模量, 需要多少时间?
+  cout << "估计运行时间(s): " << time(start, end) * (N / M) * (N / M) << endl;
+
   return 0;
 }
-
